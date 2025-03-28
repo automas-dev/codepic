@@ -97,3 +97,4 @@ dmypy.json
 cython_debug/
 
 *.png
+!docs/*.png
