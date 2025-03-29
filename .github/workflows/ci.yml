@@ -2,6 +2,7 @@ name: ci
 
 on:
   push:
+    branch:
 
 jobs:
   lint_test:
