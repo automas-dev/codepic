@@ -62,9 +62,17 @@ jobs:
         run: |
           poetry build
 
-      - name: Publish Package
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_KEY }}
-        run: |
-          poetry config pypi-token.pypi $PYPI_TOKEN
-          poetry publish
+      - name: Create Release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          artifacts: "dist/*.whl"
+          makeLatest: true
+          generateReleaseNotes: true
+          tag: ${{ steps.version.outputs.version }}
+
+      # - name: Publish Package
+      #   env:
+      #     PYPI_TOKEN: ${{ secrets.PYPI_KEY }}
+      #   run: |
+      #     poetry config pypi-token.pypi $PYPI_TOKEN
+      #     poetry publish
