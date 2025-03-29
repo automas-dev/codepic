@@ -24,6 +24,7 @@ Options:
   -a, --aa_factor FLOAT           Antialias factor
   -s, --style TEXT
   -l, --lang TEXT
+  -c, --clipboard                 Copy image to clipboard
   -f, --image_format [png|jpeg|bmp|gif]
                                   Antialias factor
   -o, --output FILE               Output path for image

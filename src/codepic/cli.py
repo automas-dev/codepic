@@ -1,6 +1,8 @@
 import io
 import os
 import sys
+import tempfile
+from subprocess import run
 
 import click
 from PIL import Image
@@ -26,6 +28,7 @@ from codepic.render import render_code
 @click.option('-a', '--aa_factor', type=float, default=1, help='Antialias factor')
 @click.option('-s', '--style', type=str, default='one-dark')
 @click.option('-l', '--lang', type=str)
+@click.option('-c', '--clipboard', is_flag=True, help='Copy image to clipboard')
 @click.option(
     '-f',
     '--image_format',
@@ -65,32 +68,37 @@ def cli(
     image_format: str | None,
     style: str,
     lang: str | None,
+    clipboard: bool,
 ):
     code = ''
 
     if font_name is None:
         font_name = ''
 
-    if not image_format and output:
-        ext = os.path.splitext(source_file)[1]
-        if ext:
-            ext = ext.lower()
-            if ext in ['png', 'jpeg', 'jpg', 'bmp', 'gif']:
-                image_format = ext
-                if image_format == 'jpg':
-                    image_format = 'jpeg'
-
     if not image_format:
         image_format = 'png'
+        if output:
+            ext = os.path.splitext(source_file)[1]
+            if ext:
+                ext = ext.lower()
+                if ext in ['png', 'jpeg', 'jpg', 'bmp', 'gif']:
+                    image_format = ext
+                    if image_format == 'jpg':
+                        image_format = 'jpeg'
+
+    if clipboard and image_format != 'png':
+        exit('Image format must be png to use clipboard')
 
     write_to_stdout = False
     if output == '-':
         write_to_stdout = True
+
     elif not output:
-        if source_file == '-':
-            write_to_stdout = True
-        else:
-            output = os.path.splitext(source_file)[0] + '.' + image_format.lower()
+        if not clipboard:
+            if source_file == '-':
+                write_to_stdout = True
+            else:
+                output = os.path.splitext(source_file)[0] + '.' + image_format.lower()
 
     formatter = ImageFormatter(
         font_name=font_name,
@@ -141,6 +149,7 @@ def cli(
         if height.endswith('%'):
             perc = int(height[:-1]) / 100
             height = int(img.height * perc)
+
         else:
             height = int(height)
 
@@ -148,11 +157,13 @@ def cli(
         if width.endswith('%'):
             perc = int(width[:-1]) / 100
             width = int(img.width * perc)
+
         else:
             width = int(width)
 
     if not width and height:
         width = int(height / aspect)
+
     if not height and width:
         height = int(width * aspect)
 
@@ -162,9 +173,17 @@ def cli(
     buff = io.BytesIO()
     img.save(buff, format='PNG')
 
-    if write_to_stdout:
-        sys.stdout.buffer.write(buff.getbuffer())
+    buff = buff.getbuffer()
 
-    else:
+    if clipboard:
+        with tempfile.NamedTemporaryFile('wb', delete=True) as fp:
+            fp.write(buff)
+            run(f'xclip -selection clipboard -target image/png < {fp.name}', shell=True)
+            fp.flush()
+
+    if write_to_stdout:
+        sys.stdout.buffer.write(buff)
+
+    elif output and output != '-':
         with open(output, 'wb') as f:
-            f.write(buff.getbuffer())
+            f.write(buff)
