@@ -52,15 +52,19 @@ jobs:
       - name: Install Dependencies
         run: poetry install
 
+      - name: Set version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          poetry version $VERSION
+
       - name: Build Release
         run: |
           poetry build
 
       - name: Publish Package
         env:
-          VERSION: ${{ steps.version.outputs.version }}
           PYPI_TOKEN: ${{ secrets.PYPI_KEY }}
         run: |
-          poetry version $VERSION
           poetry config pypi-token.pypi $PYPI_TOKEN
           poetry publish
