@@ -4,8 +4,8 @@ on:
   push:
 
 jobs:
-  lint_test_build:
-    name: Lint, Test & Dev Build
+  lint_test:
+    name: Lint & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'NO RELEASE')
 
-    needs: lint_test_build
+    needs: lint_test
 
     permissions:
       contents: write
@@ -51,6 +51,10 @@ jobs:
 
       - name: Install Dependencies
         run: poetry install
+
+      - name: Build Release
+        run: |
+          poetry build
 
       - name: Publish Package
         env:
