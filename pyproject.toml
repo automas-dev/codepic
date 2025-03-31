@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "codepic"
 version = "0.1.0"
-description = "Capture code into a picture"
+description = "Capture code in a picture"
 authors = ["Thomas Harrison <theharrisoncrafter@gmail.com>"]
 readme = "README.md"
 license = "MIT"
