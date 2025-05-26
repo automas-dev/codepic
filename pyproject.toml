@@ -5,8 +5,8 @@ description = "Capture code in a picture"
 authors = ["Thomas Harrison <theharrisoncrafter@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/twh2898/codepic"
-repository = "https://github.com/twh2898/codepic"
+homepage = "https://github.com/automas-dev/codepic"
+repository = "https://github.com/automas-dev/codepic"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",
