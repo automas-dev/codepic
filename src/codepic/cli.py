@@ -28,12 +28,12 @@ from codepic.render import render_code
 @click.option('-a', '--aa_factor', type=float, default=1, help='Antialias factor')
 @click.option('-s', '--style', type=str, default='one-dark')
 @click.option('-l', '--lang', type=str)
-@click.option('-c', '--clipboard', is_flag=True, help='Copy image to clipboard')
+@click.option('-c', '--clipboard', is_flag=True, help='Output image to clipboard')
 @click.option(
     '-f',
     '--image_format',
     type=click.Choice(['png', 'jpeg', 'bmp', 'gif']),
-    help='Antialias factor',
+    help='Image format',
 )
 @click.option(
     '-o',
@@ -48,7 +48,7 @@ from codepic.render import render_code
 )
 @click.argument(
     'source_file',
-    # help='Input path of source code or - to read from stdin',
+    help='Input path of source code or - to read from stdin',
     type=click.Path(
         exists=False,
         dir_okay=False,
@@ -62,7 +62,7 @@ def cli(
     height: str | None,
     line_numbers: bool,
     pad: int,
-    font_name: str | None,
+    font_name: str,
     font_size: int,
     aa_factor: float,
     image_format: str | None,
