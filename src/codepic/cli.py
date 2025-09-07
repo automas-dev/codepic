@@ -18,6 +18,25 @@ from pygments.util import ClassNotFound
 from codepic.render import render_code
 
 
+def detect_format(output, default='png'):
+    if not output:
+        return default
+
+    ext = os.path.splitext(output)[1]
+
+    if not ext:
+        ext = 'png'
+
+    ext = ext.lower()
+    if ext in ['png', 'jpeg', 'jpg', 'bmp', 'gif']:
+        if ext == 'jpg':
+            return 'jpeg'
+
+        return ext
+
+    return default
+
+
 @click.command()
 @click.option('-w', '--width', type=str, help='Fixed width in pixels or percent')
 @click.option('-h', '--height', type=str, help='Fixed hight in pixels or percent')
@@ -72,20 +91,14 @@ def cli(
 ):
     code = ''
 
-    if font_name is None:
-        font_name = ''
-
+    # Guess output image format from output file extension, otherwise png
     if not image_format:
-        image_format = 'png'
-        if output:
-            ext = os.path.splitext(source_file)[1]
-            if ext:
-                ext = ext.lower()
-                if ext in ['png', 'jpeg', 'jpg', 'bmp', 'gif']:
-                    image_format = ext
-                    if image_format == 'jpg':
-                        image_format = 'jpeg'
+        image_format = detect_format(output)
 
+    # Probably not needed since click forces lower and detect converts to lower
+    image_format = image_format.lower()
+
+    # Only png format can be stored in the clipboard
     if clipboard and image_format != 'png':
         exit('Image format must be png to use clipboard')
 
