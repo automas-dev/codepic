@@ -106,12 +106,19 @@ def cli(
     if not output and not clipboard:
         raise click.ClickException('No output location was specified, use -o or -c')
 
-    elif not output:
-        if not clipboard:
-            if source_file == '-':
-                write_to_stdout = True
-            else:
-                output = os.path.splitext(source_file)[0] + '.' + image_format.lower()
+    # Write image to stdout, can be used with clipboard output
+    write_to_stdout = output == '-'
+
+    # Read code from stdin instead of file
+    read_from_stdin = source_file == '-'
+
+    # Get code before choosing lexer
+    if read_from_stdin:
+        code = sys.stdin.read()
+
+    else:
+        with open(source_file, 'r') as f:
+            code = f.read()
 
     formatter = ImageFormatter(
         font_name=font_name,
