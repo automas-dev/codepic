@@ -6,7 +6,7 @@ Generate an image of code using pygments syntax highlighting.
 
 For example:
 
-![](docs/test.png)
+![example](docs/test.png)
 
 ## Usage
 
@@ -19,14 +19,14 @@ Options:
   -h, --height TEXT               Fixed hight in pixels or percent
   --line_numbers                  Show line numbers
   -p, --pad INTEGER               Padding in pixels
-  -f, --font_name TEXT            Font size in pt
-  -s, --font_size INTEGER         Font size in pt
+  --font_name TEXT                Font size in pt
+  --font_size INTEGER             Font size in pt
   -a, --aa_factor FLOAT           Antialias factor
   -s, --style TEXT
   -l, --lang TEXT
-  -c, --clipboard                 Copy image to clipboard
+  -c, --clipboard                 Output image to clipboard
   -f, --image_format [png|jpeg|bmp|gif]
-                                  Antialias factor
+                                  Image format
   -o, --output FILE               Output path for image
   --help                          Show this message and exit.
 ```
