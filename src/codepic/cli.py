@@ -19,21 +19,19 @@ from codepic.render import render_code
 
 
 def format_from_extension(output, default='png'):
-    if not output:
-        return default
+    if output:
+        ext = os.path.splitext(output)[1]
 
-    ext = os.path.splitext(output)[1]
+        if ext:
+            ext = ext.lower()
+            if ext == 'jpg':
+                ext = 'jpeg'
 
-    if not ext:
-        ext = 'png'
+            if ext in ['png', 'jpeg', 'bmp', 'gif']:
+                print('Got output image format', ext, 'from output file extension', file=sys.stderr)
+                return ext
 
-    ext = ext.lower()
-    if ext in ['png', 'jpeg', 'jpg', 'bmp', 'gif']:
-        if ext == 'jpg':
-            return 'jpeg'
-
-        return ext
-
+    print('No format provided, defaulting to png', file=sys.stderr)
     return default
 
 
