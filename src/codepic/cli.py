@@ -100,11 +100,11 @@ def cli(
 
     # Only png format can be stored in the clipboard
     if clipboard and image_format != 'png':
-        exit('Image format must be png to use clipboard')
+        raise click.ClickException('Image format must be png to use -c')
 
-    write_to_stdout = False
-    if output == '-':
-        write_to_stdout = True
+    # Must have somewhere to output, clipboard or file / stdout
+    if not output and not clipboard:
+        raise click.ClickException('No output location was specified, use -o or -c')
 
     elif not output:
         if not clipboard:
