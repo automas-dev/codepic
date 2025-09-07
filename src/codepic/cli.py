@@ -18,7 +18,7 @@ from pygments.util import ClassNotFound
 from codepic.render import render_code
 
 
-def detect_format(output, default='png'):
+def format_from_extension(output, default='png'):
     if not output:
         return default
 
@@ -42,8 +42,8 @@ def detect_format(output, default='png'):
 @click.option('-h', '--height', type=str, help='Fixed hight in pixels or percent')
 @click.option('--line_numbers', is_flag=True, help='Show line numbers')
 @click.option('-p', '--pad', type=int, default=30, help='Padding in pixels')
-@click.option('-f', '--font_name', type=str, help='Font size in pt')
-@click.option('-s', '--font_size', type=int, default=14, help='Font size in pt')
+@click.option('--font_name', type=str, help='Font size in pt', default='')
+@click.option('--font_size', type=int, default=14, help='Font size in pt')
 @click.option('-a', '--aa_factor', type=float, default=1, help='Antialias factor')
 @click.option('-s', '--style', type=str, default='one-dark')
 @click.option('-l', '--lang', type=str)
@@ -91,9 +91,9 @@ def cli(
 ):
     code = ''
 
-    # Guess output image format from output file extension, otherwise png
+    # Use output file extension to detect image format, otherwise png
     if not image_format:
-        image_format = detect_format(output)
+        image_format = format_from_extension(output)
 
     # Probably not needed since click forces lower and detect converts to lower
     image_format = image_format.lower()
