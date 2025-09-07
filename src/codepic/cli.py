@@ -15,7 +15,12 @@ from pygments.lexers import (
 )
 from pygments.util import ClassNotFound
 
-from codepic.render import render_code
+from codepic.render import render_code, resize_image
+
+
+# Print message to stderr because the image can be written through stdout
+def log(msg):
+    click.echo(msg, err=True)
 
 
 def format_from_extension(output, default='png'):
@@ -28,11 +33,47 @@ def format_from_extension(output, default='png'):
                 ext = 'jpeg'
 
             if ext in ['png', 'jpeg', 'bmp', 'gif']:
-                print('Got output image format', ext, 'from output file extension', file=sys.stderr)
+                log(f'Got output image format {ext} from output file extension')
                 return ext
 
-    print('No format provided, defaulting to png', file=sys.stderr)
+    log('No format provided, defaulting to png')
     return default
+
+
+def read_code(source_file):
+    # Read code from stdin
+    if source_file == '-':
+        log('Reading code from stdion')
+        return sys.stdin.read()
+
+    # TODO maybe remove these as they might be too verbose
+    log(f'Reading code from file {source_file}')
+
+    # Read code from file
+    with open(source_file, 'r') as f:
+        return f.read()
+
+
+def get_lexer(lang, source_file, code):
+    # Lexer from language name
+    if lang:
+        return get_lexer_by_name(lang)
+
+    # Use source file extension
+    if source_file != '-':
+        try:
+            return get_lexer_for_filename(code)
+
+        except ClassNotFound:
+            log('Could not detect language from source file extension')
+            pass
+
+    try:
+        return guess_lexer(code)
+
+    except ClassNotFound:
+        log('Could not detect language by analyzing code, defaulting to plain text')
+        return TextLexer()
 
 
 @click.command()
@@ -65,7 +106,7 @@ def format_from_extension(output, default='png'):
 )
 @click.argument(
     'source_file',
-    help='Input path of source code or - to read from stdin',
+    # help='Input path of source code or - to read from stdin',
     type=click.Path(
         exists=False,
         dir_okay=False,
@@ -87,14 +128,12 @@ def cli(
     lang: str | None,
     clipboard: bool,
 ):
-    code = ''
-
     # Use output file extension to detect image format, otherwise png
     if not image_format:
         image_format = format_from_extension(output)
 
-    # Probably not needed since click forces lower and detect converts to lower
-    image_format = image_format.lower()
+    else:
+        log(f'Using image format {image_format}')
 
     # Only png format can be stored in the clipboard
     if clipboard and image_format != 'png':
@@ -104,20 +143,13 @@ def cli(
     if not output and not clipboard:
         raise click.ClickException('No output location was specified, use -o or -c')
 
-    # Write image to stdout, can be used with clipboard output
-    write_to_stdout = output == '-'
-
-    # Read code from stdin instead of file
-    read_from_stdin = source_file == '-'
-
     # Get code before choosing lexer
-    if read_from_stdin:
-        code = sys.stdin.read()
+    code = read_code(source_file)
 
-    else:
-        with open(source_file, 'r') as f:
-            code = f.read()
+    # Get lexer from lang name or source file extension, defaults to plaintext
+    lexer = get_lexer(lang, source_file, code)
 
+    # Setup image formatting
     formatter = ImageFormatter(
         font_name=font_name,
         font_size=font_size * aa_factor,
@@ -127,66 +159,10 @@ def cli(
         image_format=image_format,
     )
 
-    lexer = None
+    # Render the code
+    img = render_code(code, lexer, formatter, width, height, aa_factor)
 
-    if lang:
-        lexer = get_lexer_by_name(lang)
-
-    if source_file == '-':
-        code = sys.stdin.read()
-
-        if not lexer:
-            try:
-                lexer = guess_lexer(code)
-
-            except ClassNotFound:
-                lexer = TextLexer()
-
-        img = render_code(code, lexer, formatter, aa_factor)
-
-    else:
-        with open(source_file, 'r') as f:
-            code = f.read()
-
-        if not lexer:
-            try:
-                lexer = get_lexer_for_filename(code)
-
-            except ClassNotFound:
-                try:
-                    lexer = guess_lexer(code)
-
-                except ClassNotFound:
-                    lexer = TextLexer()
-
-        img = render_code(code, lexer, formatter, aa_factor)
-
-    aspect = img.height / img.width
-
-    if height:
-        if height.endswith('%'):
-            perc = int(height[:-1]) / 100
-            height = int(img.height * perc)
-
-        else:
-            height = int(height)
-
-    if width:
-        if width.endswith('%'):
-            perc = int(width[:-1]) / 100
-            width = int(img.width * perc)
-
-        else:
-            width = int(width)
-
-    if not width and height:
-        width = int(height / aspect)
-
-    if not height and width:
-        height = int(width * aspect)
-
-    if width and height:
-        img = img.resize((width, height), resample=Image.Resampling.LANCZOS)
+    # GARBAGE AFTER HERE
 
     buff = io.BytesIO()
     img.save(buff, format='PNG')
@@ -199,8 +175,8 @@ def cli(
             run(f'xclip -selection clipboard -target image/png < {fp.name}', shell=True)
             fp.flush()
 
-    if write_to_stdout:
-        sys.stdout.buffer.write(buff)
+    # if write_to_stdout:
+    #     sys.stdout.buffer.write(buff)
 
     elif output and output != '-':
         with open(output, 'wb') as f:
