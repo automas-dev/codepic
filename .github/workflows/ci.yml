@@ -74,15 +74,15 @@ jobs:
       - name: Build Release
         run: uv build
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "dist/*.whl"
-          makeLatest: true
-          generateReleaseNotes: true
-          tag: ${{ steps.version.outputs.version }}
+      # - name: Create Release
+      #   uses: ncipollo/release-action@v1.14.0
+      #   with:
+      #     artifacts: "dist/*.whl"
+      #     makeLatest: true
+      #     generateReleaseNotes: true
+      #     tag: ${{ steps.version.outputs.version }}
 
-      - name: Publish Package
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_KEY }}
-        run: uv publish
+      # - name: Publish Package
+      #   env:
+      #     UV_PUBLISH_TOKEN: ${{ secrets.PYPI_KEY }}
+      #   run: uv publish
