@@ -17,27 +17,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Setup Python
-        uses: automas-dev/reusable-workflows/setup_python@main
+      - name: Install Python
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
-          poetry-version: "1.8.5"
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install Dependencies
-        run: poetry install
+        run: uv sync --locked --all-extras --dev
 
       - name: Lint
-        run: poetry run ruff check .
+        run: |
+          uv run ruff format --check
+          uv run ruff check
 
       # - name: Test
-      #   run: poetry run pytest tests --cov=src --cov-branch --cov-fail-under=100
+      #   run: uv run pytest
 
   build_release:
     name: Build Release
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'NO RELEASE')
+    # if: github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'NO RELEASE')
 
     needs: lint_test
 
@@ -45,42 +49,40 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Increment Version
-        uses: automas-dev/reusable-workflows/increment_version@main
+        uses: automas-dev/reusable-workflows/increment_version@v1.0
         id: version
 
-      - name: Setup Python
-        uses: automas-dev/reusable-workflows/setup_python@main
+      - name: Install Python
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
-          poetry-version: "1.8.5"
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Install Dependencies
-        run: poetry install
+        run: uv sync --locked --all-extras --dev
 
       - name: Set version
         env:
           VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          poetry version $VERSION
+        run: uv version $VERSION
 
       - name: Build Release
-        run: |
-          poetry build
+        run: uv build
 
-      - name: Create Release
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "dist/*.whl"
-          makeLatest: true
-          generateReleaseNotes: true
-          tag: ${{ steps.version.outputs.version }}
+      # - name: Create Release
+      #   uses: ncipollo/release-action@v1.14.0
+      #   with:
+      #     artifacts: "dist/*.whl"
+      #     makeLatest: true
+      #     generateReleaseNotes: true
+      #     tag: ${{ steps.version.outputs.version }}
 
-      - name: Publish Package
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_KEY }}
-        run: |
-          poetry config pypi-token.pypi $PYPI_TOKEN
-          poetry publish
+      # - name: Publish Package
+      #   env:
+      #     UV_PUBLISH_TOKEN: ${{ secrets.PYPI_KEY }}
+      #   run: uv publish
