@@ -1,33 +1,38 @@
-[tool.poetry]
+[project]
 name = "codepic"
 version = "0.1.0"
 description = "Capture code in a picture"
-authors = ["Thomas Harrison <theharrisoncrafter@gmail.com>"]
 readme = "README.md"
 license = "MIT"
+authors = [{ name = "Thomas Harrison", email = "theharrisoncrafter@gmail.com" }]
 homepage = "https://github.com/automas-dev/codepic"
 repository = "https://github.com/automas-dev/codepic"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",
-    "License :: OSI Approved :: MIT License",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.4.0",
+    "pillow>=12.2.0",
+    "pygments>=2.20.0",
 ]
 
-packages = [{ include = "codepic", from = "src" }]
+# packages = [{ include = "codepic", from = "src" }]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pygments = "^2.19.1"
-pillow = "^11.1.0"
-click = "^8.1.8"
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.13",
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.1.3"
-pytest-cov = "^4.0.0"
-ruff = "^0.8.4"
-
-[tool.poetry.scripts]
+[project.scripts]
 codepic = "codepic:cli"
+
+[build-system]
+requires = ["uv_build>=0.11.15,<0.12.0"]
+build-backend = "uv_build"
 
 [tool.ruff.lint]
 extend-select = ["I"]
@@ -38,19 +43,12 @@ quote-style = "single"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-addopts = "--cov=src --cov-branch --cov-fail-under=100"
+addopts = "--cov"
 
 [tool.coverage.run]
 branch = false
 source = ["src"]
 
-[tool.coverage.paths]
-source = ["src"]
-
 [tool.coverage.report]
 show_missing = true
 fail_under = 100
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
