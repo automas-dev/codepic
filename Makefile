@@ -1,9 +1,9 @@
 
 setup:
-	poetry install
+	uv sync
 
 build: setup
-	poetry build
+	uv build
 
 install: build
 	/usr/bin/python3 -m pip install dist/$$(ls dist | grep .whl | tail -n 1)
@@ -11,12 +11,14 @@ install: build
 checks: lint test
 
 lint:
-	poetry run ruff check .
+	uv run ruff format --check
+	uv run ruff check
 
 format:
-	poetry run ruff check --fix .
+	uv run ruff format
+	uv run ruff check --fix
 
 test:
-	poetry run pytest tests
+	uv run pytest
 
 .PHONY: setup build install checks lint format test
